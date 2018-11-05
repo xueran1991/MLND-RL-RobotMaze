@@ -48,7 +48,9 @@ class Robot(object):
         else:
             # TODO 2. Update parameters when learning
             self.t += 1.0
-            self.epsilon = self.epsilon0 * (1.0/(self.t/20+1))
+            #self.epsilon = self.epsilon0 * (1.0/(self.t/20+1))
+            self.epsilon = self.epsilon0 * max(0, \
+                (1.0-np.power(self.t/(self.maze.height*self.maze.width), 2)))
 
         return self.epsilon
 
@@ -58,8 +60,7 @@ class Robot(object):
         """
         
         # TODO 3. Return robot's current state
-        self.state=self.maze.sense_robot()
-        return self.state
+        return self.maze.sense_robot()
     
     def create_Qtable_line(self, state):
         """
@@ -71,10 +72,7 @@ class Robot(object):
         # If Qtable[state] already exits, then do
         # not change it.
                 
-        if state not in self.Qtable.keys():
-            self.Qtable[state] = {}
-            for action in self.valid_actions:
-                self.Qtable[state][action] = 0
+        self.Qtable.setdefault(state, {a:0.0 for a in self.valid_actions})
                 
 
     def choose_action(self):
@@ -98,10 +96,10 @@ class Robot(object):
                 return self.valid_actions[np.random.choice(4)]
             else:
                 # TODO 7. Return action with highest q value
-                return max(self.Qtable[self.state])
+                return max(self.Qtable[self.state], key=self.Qtable[self.state].get)
         elif self.testing:
             # TODO 7. choose action with highest q value
-            return max(self.Qtable[self.state])
+            return max(self.Qtable[self.state], key=self.Qtable[self.state].get)
         else:
             # TODO 6. Return random choose aciton
             return self.valid_actions[np.random.choice(4)]
